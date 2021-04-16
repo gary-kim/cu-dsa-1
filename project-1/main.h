@@ -109,9 +109,9 @@ enum listContents {
 };
 
 void runFile();
-void create(std::unordered_map<std::string, listEntry>&, std::string, std::string);
-void push(std::unordered_map<std::string, listEntry>&, std::string, std::string);
-void pop(std::unordered_map<std::string, listEntry>&, std::string);
+void create(std::unordered_map<std::string, listEntry>*, std::string, std::string);
+void push(std::unordered_map<std::string, listEntry>*, std::string, std::string);
+void pop(std::unordered_map<std::string, listEntry>*, std::string);
 listContents getListContents(std::string);
 
 #endif //CU_DSA_1_MAIN_H

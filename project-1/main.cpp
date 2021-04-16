@@ -14,207 +14,210 @@
 //    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include <iostream>
-#include "main.h"
-#include <unordered_map>
-#include <string>
 #include <fstream>
+#include <iostream>
+#include <string>
+#include <unordered_map>
+
+#include "main.h"
 
 int main(int argc, char** argv) {
-    std::string inputFilePath, outputFilePath;
-    std::ofstream outputFile;
-    std::ifstream inputFile;
-    if (argc >= 3) {
-        inputFilePath = std::string(argv[1]);
-        outputFilePath = std::string(argv[2]);
-    } else {
-        std::cout << "Enter name of input file: ";
-        std::cin >> inputFilePath;
-        std::cout << "Enter name of output file: ";
-        std::cin >> outputFilePath;
-    }
+  std::string inputFilePath, outputFilePath;
+  std::ofstream outputFile;
+  std::ifstream inputFile;
+  if (argc >= 3) {
+    inputFilePath = std::string(argv[1]);
+    outputFilePath = std::string(argv[2]);
+  } else {
+    std::cout << "Enter name of input file: ";
+    std::cin >> inputFilePath;
+    std::cout << "Enter name of output file: ";
+    std::cin >> outputFilePath;
+  }
 
-    // setup stdin and stdout to the requested files
-    if (inputFilePath != "-") {
-        inputFile.open(inputFilePath);
-        std::cin.rdbuf(inputFile.rdbuf());
-    }
-    if (outputFilePath != "-") {
-        outputFile.open(outputFilePath);
-        std::cout.rdbuf(outputFile.rdbuf());
-    }
+  // setup stdin and stdout to the requested files
+  if (inputFilePath != "-") {
+    inputFile.open(inputFilePath);
+    std::cin.rdbuf(inputFile.rdbuf());
+  }
+  if (outputFilePath != "-") {
+    outputFile.open(outputFilePath);
+    std::cout.rdbuf(outputFile.rdbuf());
+  }
 
-    runFile();
-    return 0;
+  runFile();
+  return 0;
 }
 
 void runFile() {
-    // map of everything
-    std::unordered_map<std::string, listEntry> m;
+  // map of everything
+  std::unordered_map<std::string, listEntry> m;
 
-    // run each command
-    while (std::cin.peek() != EOF) {
-        std::string command;
-        std::cin >> command;
-        if (command == "create") {
-            std::string name, type;
-            std::cin >> name >> type;
-            create(m, name, type);
-            continue;
-        }
-        if (command == "push") {
-            std::string name, value;
-            std::cin >> name >> value;
-            push(m, name, value);
-            continue;
-        }
-        if (command == "pop") {
-            std::string name;
-            std::cin >> name;
-            pop(m, name);
-            continue;
-        }
+  // run each command
+  while (std::cin.peek() != EOF) {
+    std::string command;
+    std::cin >> command;
+    if (command == "create") {
+      std::string name, type;
+      std::cin >> name >> type;
+      create(&m, name, type);
+      continue;
     }
+    if (command == "push") {
+      std::string name, value;
+      std::cin >> name >> value;
+      push(&m, name, value);
+      continue;
+    }
+    if (command == "pop") {
+      std::string name;
+      std::cin >> name;
+      pop(&m, name);
+      continue;
+    }
+  }
 }
 
-void create(std::unordered_map<std::string, listEntry>& m, std::string name, std::string type) {
-    std::cout << "PROCESSING COMMAND: create " << name << " " << type << "\n";
-    listEntry list = m[name];
-    if (list.list != NULL) {
-        std::cout << "ERROR: This name already exists!\n";
-        return;
+void create(std::unordered_map<std::string, listEntry>* mp, std::string name,
+            std::string type) {
+  std::cout << "PROCESSING COMMAND: create " << name << " " << type << "\n";
+  listEntry list = (*mp)[name];
+  if (list.list != NULL) {
+    std::cout << "ERROR: This name already exists!\n";
+    return;
+  }
+  void* ta = NULL;
+  listType lType = listType::queue;
+  if (type == "queue") {
+    switch (getListContents(name)) {
+      case listContents::aString:
+        ta = new Queue<std::string>(name);
+        break;
+      case listContents::aDouble:
+        ta = new Queue<double>(name);
+        break;
+      case listContents::anInteger:
+        ta = new Queue<int>(name);
+        break;
     }
-    void* ta = NULL;
-    listType lType = listType::queue;
-    if (type == "queue") {
-        switch (getListContents(name)) {
-            case listContents::aString:
-                ta = new Queue<std::string>(name);
-                break;
-            case listContents::aDouble:
-                ta = new Queue<double>(name);
-                break;
-            case listContents::anInteger:
-                ta = new Queue<int>(name);
-                break;
-        }
-    } else {
-        switch (getListContents(name)) {
-            case listContents::aString:
-                ta = new Stack<std::string>(name);
-                break;
-            case listContents::aDouble:
-                ta = new Stack<double>(name);
-                break;
-            case listContents::anInteger:
-                ta = new Stack<int>(name);
-                break;
-        }
-       lType = listType::stack;
+  } else {
+    switch (getListContents(name)) {
+      case listContents::aString:
+        ta = new Stack<std::string>(name);
+        break;
+      case listContents::aDouble:
+        ta = new Stack<double>(name);
+        break;
+      case listContents::anInteger:
+        ta = new Stack<int>(name);
+        break;
     }
-    m[name] = listEntry{ta, lType};
+    lType = listType::stack;
+  }
+  (*mp)[name] = listEntry{ta, lType};
 }
 
-void push(std::unordered_map<std::string, listEntry>& m, std::string name, std::string value) {
-    std::cout << "PROCESSING COMMAND: push " << name << " " << value << "\n";
-    listEntry list = m[name];
-    if (list.list == NULL) {
-        std::cout << "ERROR: This name does not exist!\n";
-        return;
+void push(std::unordered_map<std::string, listEntry>* mp, std::string name,
+          std::string value) {
+  std::cout << "PROCESSING COMMAND: push " << name << " " << value << "\n";
+  listEntry list = (*mp)[name];
+  if (list.list == NULL) {
+    std::cout << "ERROR: This name does not exist!\n";
+    return;
+  }
+  if (list.type == listType::queue) {
+    switch (getListContents(name)) {
+      case listContents::aString:
+        ((Queue<std::string>*)(list.list))->push(value);
+        break;
+      case listContents::aDouble:
+        ((Queue<double>*)(list.list))->push(atof(value.c_str()));
+        break;
+      case listContents::anInteger:
+        ((Queue<int>*)(list.list))->push(atoi(value.c_str()));
+        break;
     }
-    if (list.type == listType::queue) {
-        switch (getListContents(name)) {
-            case listContents::aString:
-                ((Queue<std::string>*)(list.list))->push(value);
-                break;
-            case listContents::aDouble:
-                ((Queue<double>*)(list.list))->push(atof(value.c_str()));
-                break;
-            case listContents::anInteger:
-                ((Queue<int>*)(list.list))->push(atoi(value.c_str()));
-                break;
-        }
-    } else {
-        switch (getListContents(name)) {
-            case listContents::aString:
-                ((Stack<std::string>*)(list.list))->push(value);
-                break;
-            case listContents::aDouble:
-                ((Stack<double>*)(list.list))->push(atof(value.c_str()));
-                break;
-            case listContents::anInteger:
-                ((Stack<int>*)(list.list))->push(atoi(value.c_str()));
-                break;
-        }
+  } else {
+    switch (getListContents(name)) {
+      case listContents::aString:
+        ((Stack<std::string>*)(list.list))->push(value);
+        break;
+      case listContents::aDouble:
+        ((Stack<double>*)(list.list))->push(atof(value.c_str()));
+        break;
+      case listContents::anInteger:
+        ((Stack<int>*)(list.list))->push(atoi(value.c_str()));
+        break;
     }
+  }
 }
 
-void pop(std::unordered_map<std::string, listEntry>& m, std::string name) {
-    std::cout << "PROCESSING COMMAND: pop " << name << "\n";
-    listEntry list = m[name];
-    if (list.list == NULL) {
-        std::cout << "ERROR: This name does not exist!\n";
+void pop(std::unordered_map<std::string, listEntry>* mp, std::string name) {
+  std::cout << "PROCESSING COMMAND: pop " << name << "\n";
+  listEntry list = (*mp)[name];
+  if (list.list == NULL) {
+    std::cout << "ERROR: This name does not exist!\n";
+    return;
+  }
+  if (list.type == listType::queue) {
+    listContents contents = getListContents(name);
+    if (contents == listContents::aString) {
+      Queue<std::string>* l = (Queue<std::string>*)(list.list);
+      if (l->isEmpty()) {
+        std::cout << "ERROR: This list is empty!\n";
         return;
-    }
-    if (list.type == listType::queue) {
-        listContents contents = getListContents(name);
-        if (contents == listContents::aString) {
-            Queue<std::string>* l = (Queue<std::string>*)(list.list);
-            if (l->isEmpty()) {
-                std::cout << "ERROR: This list is empty!\n";
-                return;
-            }
-            std::cout << "Value popped: " << l->pop() << "\n";
-        } else if (contents == listContents::aDouble) {
-            Queue<double>* l = (Queue<double>*)(list.list);
-            if (l->isEmpty()) {
-                std::cout << "ERROR: This list is empty!\n";
-                return;
-            }
-            std::cout << "Value popped: " << l->pop() << "\n";
-        } else {
-            Queue<int>* l = (Queue<int>*)(list.list);
-            if (l->isEmpty()) {
-                std::cout << "ERROR: This list is empty!\n";
-                return;
-            }
-            std::cout << "Value popped: " << l->pop() << "\n";
-        }
+      }
+      std::cout << "Value popped: " << l->pop() << "\n";
+    } else if (contents == listContents::aDouble) {
+      Queue<double>* l = (Queue<double>*)(list.list);
+      if (l->isEmpty()) {
+        std::cout << "ERROR: This list is empty!\n";
+        return;
+      }
+      std::cout << "Value popped: " << l->pop() << "\n";
     } else {
-        listContents contents = getListContents(name);
-        if (contents == listContents::aString) {
-            Stack<std::string>* l = (Stack<std::string>*)(list.list);
-            if (l->isEmpty()) {
-                std::cout << "ERROR: This list is empty!\n";
-                return;
-            }
-            std::cout << "Value popped: " << l->pop() << "\n";
-        } else if (contents == listContents::aDouble) {
-            Stack<double>* l = (Stack<double>*)(list.list);
-            if (l->isEmpty()) {
-                std::cout << "ERROR: This list is empty!\n";
-                return;
-            }
-            std::cout << "Value popped: " << l->pop() << "\n";
-        } else {
-            Stack<int>* l = (Stack<int>*)(list.list);
-            if (l->isEmpty()) {
-                std::cout << "ERROR: This list is empty!\n";
-                return;
-            }
-            std::cout << "Value popped: " << l->pop() << "\n";
-        }
+      Queue<int>* l = (Queue<int>*)(list.list);
+      if (l->isEmpty()) {
+        std::cout << "ERROR: This list is empty!\n";
+        return;
+      }
+      std::cout << "Value popped: " << l->pop() << "\n";
     }
+  } else {
+    listContents contents = getListContents(name);
+    if (contents == listContents::aString) {
+      Stack<std::string>* l = (Stack<std::string>*)(list.list);
+      if (l->isEmpty()) {
+        std::cout << "ERROR: This list is empty!\n";
+        return;
+      }
+      std::cout << "Value popped: " << l->pop() << "\n";
+    } else if (contents == listContents::aDouble) {
+      Stack<double>* l = (Stack<double>*)(list.list);
+      if (l->isEmpty()) {
+        std::cout << "ERROR: This list is empty!\n";
+        return;
+      }
+      std::cout << "Value popped: " << l->pop() << "\n";
+    } else {
+      Stack<int>* l = (Stack<int>*)(list.list);
+      if (l->isEmpty()) {
+        std::cout << "ERROR: This list is empty!\n";
+        return;
+      }
+      std::cout << "Value popped: " << l->pop() << "\n";
+    }
+  }
 }
 
 listContents getListContents(std::string name) {
-    switch (name.at(0)) {
-        case 's':
-            return listContents::aString;
-        case 'i':
-            return listContents::anInteger;
-        default:
-        case 'd':
-            return listContents::aDouble;
-    }
+  switch (name.at(0)) {
+    case 's':
+      return listContents::aString;
+    case 'i':
+      return listContents::anInteger;
+    default:
+    case 'd':
+      return listContents::aDouble;
+  }
 }
