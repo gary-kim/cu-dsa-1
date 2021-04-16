@@ -21,36 +21,56 @@
 #include <fstream>
 
 int main(int argc, char** argv) {
-    runFile("input.txt");
+    std::string inputFilePath, outputFilePath;
+    std::ofstream outputFile;
+    std::ifstream inputFile;
+    if (argc >= 3) {
+        inputFilePath = std::string(argv[1]);
+        outputFilePath = std::string(argv[2]);
+    } else {
+        std::cout << "Enter name of input file: ";
+        std::cin >> inputFilePath;
+        std::cout << "Enter name of output file: ";
+        std::cin >> outputFilePath;
+    }
+
+    // setup stdin and stdout to the requested files
+    if (inputFilePath != "-") {
+        inputFile.open(inputFilePath);
+        std::cin.rdbuf(inputFile.rdbuf());
+    }
+    if (outputFilePath != "-") {
+        outputFile.open(outputFilePath);
+        std::cout.rdbuf(outputFile.rdbuf());
+    }
+
+    runFile();
     return 0;
 }
 
-void runFile(std::string filename) {
+void runFile() {
     // map of everything
     std::unordered_map<std::string, listEntry> m;
 
-    std::ifstream input;
-    input.open(filename);
-
     // run each command
-    while (input.peek() != EOF) {
+    while (std::cin.peek() != EOF) {
         std::string command;
-        input >> command;
+        std::cin >> command;
         if (command == "create") {
             std::string name, type;
-            input >> name >> type;
+            std::cin >> name >> type;
             create(m, name, type);
             continue;
         }
         if (command == "push") {
             std::string name, value;
-            input >> name >> value;
+            std::cin >> name >> value;
             push(m, name, value);
             continue;
         }
         if (command == "pop") {
             std::string name;
-            input >> name;
+            std::cin >> name;
             pop(m, name);
             continue;
         }

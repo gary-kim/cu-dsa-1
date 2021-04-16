@@ -106,7 +106,7 @@ enum listContents {
     aString = 3,
 };
 
-void runFile(std::string);
+void runFile();
 void create(std::unordered_map<std::string, listEntry>&, std::string, std::string);
 void push(std::unordered_map<std::string, listEntry>&, std::string, std::string);
 void pop(std::unordered_map<std::string, listEntry>&, std::string);
