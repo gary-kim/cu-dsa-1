@@ -59,7 +59,9 @@ template <class T> T List<T>::remove() {
     if (this->start == NULL) {
         this->end = NULL;
     }
-    return tr->value;
+    T t = tr->value;
+    delete tr;
+    return t;
 }
 
 template <class T> bool List<T>::isEmpty() {
