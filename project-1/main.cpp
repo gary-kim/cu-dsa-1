@@ -1,5 +1,5 @@
 /*
- * dsa-1-project-1 will read in a file of commands for lists and execute them
+ * dsa-1-project-1 will read in a file of commands for Lists and execute them
  * Copyright (C) 2021 Gary Kim <gary@garykim.dev>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include <string>
 #include <unordered_map>
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   std::string inputFilePath, outputFilePath;
   std::ofstream outputFile;
   std::ifstream inputFile;
@@ -56,8 +56,10 @@ int main(int argc, char** argv) {
  * then outputs the results of each command to stdout
  */
 void runFile() {
-  // map of everything
-  std::unordered_map<std::string, listEntry> m;
+  // make an instance of Lists
+  Lists list{new std::unordered_map<std::string, SimpleList<std::string> *>,
+             new std::unordered_map<std::string, SimpleList<double> *>,
+             new std::unordered_map<std::string, SimpleList<int> *>};
 
   // run each command
   while (std::cin.peek() != EOF) {
@@ -66,19 +68,19 @@ void runFile() {
     if (command == "create") {
       std::string name, type;
       std::cin >> name >> type;
-      create(&m, name, type);
+      create(&list, name, type);
       continue;
     }
     if (command == "push") {
       std::string name, value;
       std::cin >> name >> value;
-      push(&m, name, value);
+      push(&list, name, value);
       continue;
     }
     if (command == "pop") {
       std::string name;
       std::cin >> name;
-      pop(&m, name);
+      pop(&list, name);
       continue;
     }
   }
@@ -86,151 +88,136 @@ void runFile() {
 
 /**
  * create is an implementation for the create command that could be given.
- * @param mp map of listEntry(s) storing the lists that have been created
+ * @param mp Lists instance to add the created list into
  * @param name the name of the list to create
  * @param type the type of list to create
  */
-void create(std::unordered_map<std::string, listEntry>* mp,
-            const std::string& name, const std::string& type) {
+void create(Lists *mp, std::string name, std::string type) {
   std::cout << "PROCESSING COMMAND: create " << name << " " << type << "\n";
-  listEntry list = (*mp)[name];
-  if (list.list != nullptr) {
-    std::cout << "ERROR: This name already exists!\n";
+  listContents listContent = getListContents(name);
+  if (listContent == listContents::aString) {
+    SimpleList<std::string> *list = (*mp->strings)[name];
+    if (list != nullptr) {
+      std::cout << "ERROR: This name already exists!\n";
+      return;
+    }
+    if (type == "stack") {
+      (*mp->strings)[name] = new Stack<std::string>();
+    } else {
+      (*mp->strings)[name] = new Queue<std::string>();
+    }
     return;
   }
-  void* ta = nullptr;
-  listType lType = listType::queue;
-  if (type == "queue") {
-    switch (getListContents(name)) {
-      case listContents::aString:
-        ta = new Queue<std::string>(name);
-        break;
-      case listContents::aDouble:
-        ta = new Queue<double>(name);
-        break;
-      case listContents::anInteger:
-        ta = new Queue<int>(name);
-        break;
+  if (listContent == listContents::aDouble) {
+    SimpleList<double> *list = (*mp->doubles)[name];
+    if (list != nullptr) {
+      std::cout << "ERROR: This name already exists!\n";
+      return;
     }
-  } else {
-    switch (getListContents(name)) {
-      case listContents::aString:
-        ta = new Stack<std::string>(name);
-        break;
-      case listContents::aDouble:
-        ta = new Stack<double>(name);
-        break;
-      case listContents::anInteger:
-        ta = new Stack<int>(name);
-        break;
+    if (type == "stack") {
+      (*mp->doubles)[name] = new Stack<double>();
+    } else {
+      (*mp->doubles)[name] = new Queue<double>();
     }
-    lType = listType::stack;
+    return;
   }
-  (*mp)[name] = listEntry{ta, lType};
+  if (listContent == listContents::anInteger) {
+    SimpleList<int> *list = (*mp->ints)[name];
+    if (list != nullptr) {
+      std::cout << "ERROR: This name already exists!\n";
+      return;
+    }
+    if (type == "stack") {
+      (*mp->ints)[name] = new Stack<int>();
+    } else {
+      (*mp->ints)[name] = new Queue<int>();
+    }
+  }
 }
 
 /**
  * push is an implementation for the push command that could be given.
- * @param mp map of listEntry(s) storing the lists that have been created
+ * @param mp Lists instance to containing the list to be modified
  * @param name the name of the list to push the value onto
  * @param value the value to push onto the list
  */
-void push(std::unordered_map<std::string, listEntry>* mp,
-          const std::string& name, const std::string& value) {
+void push(Lists *mp, std::string name, std::string value) {
   std::cout << "PROCESSING COMMAND: push " << name << " " << value << "\n";
-  listEntry list = (*mp)[name];
-  if (list.list == nullptr) {
-    std::cout << "ERROR: This name does not exist!\n";
+  listContents listContent = getListContents(name);
+  if (listContent == listContents::aString) {
+    SimpleList<std::string> *list = (*mp->strings)[name];
+    if (list == nullptr) {
+      std::cout << "ERROR: This name does not exist!\n";
+      return;
+    }
+    list->push(value);
     return;
   }
-  if (list.type == listType::queue) {
-    switch (getListContents(name)) {
-      case listContents::aString:
-        ((Queue<std::string>*)(list.list))->push(value);
-        break;
-      case listContents::aDouble:
-        ((Queue<double>*)(list.list))->push(atof(value.c_str()));
-        break;
-      case listContents::anInteger:
-        ((Queue<int>*)(list.list))->push(atoi(value.c_str()));
-        break;
+  if (listContent == listContents::aDouble) {
+    SimpleList<double> *list = (*mp->doubles)[name];
+    if (list == nullptr) {
+      std::cout << "ERROR: This name does not exist!\n";
+      return;
     }
-  } else {
-    switch (getListContents(name)) {
-      case listContents::aString:
-        ((Stack<std::string>*)(list.list))->push(value);
-        break;
-      case listContents::aDouble:
-        ((Stack<double>*)(list.list))->push(atof(value.c_str()));
-        break;
-      case listContents::anInteger:
-        ((Stack<int>*)(list.list))->push(atoi(value.c_str()));
-        break;
+    list->push(atof(value.c_str()));
+    return;
+  }
+  if (listContent == listContents::anInteger) {
+    SimpleList<int> *list = (*mp->ints)[name];
+    if (list == nullptr) {
+      std::cout << "ERROR: This name does not exist!\n";
+      return;
     }
+    list->push(atoi(value.c_str()));
   }
 }
 
 /**
  * pop is an implementation for the pop command that could be given.
- * @param mp map of listEntry(s) storing the lists that have been created
+ * @param mp Lists instance to containing the list to be modified
  * @param name the name of the list to push the value onto
  */
-void pop(std::unordered_map<std::string, listEntry>* mp,
-         const std::string& name) {
+void pop(Lists *mp, std::string name) {
   std::cout << "PROCESSING COMMAND: pop " << name << "\n";
-  listEntry list = (*mp)[name];
-  if (list.list == nullptr) {
-    std::cout << "ERROR: This name does not exist!\n";
+  listContents listContent = getListContents(name);
+  if (listContent == listContents::aString) {
+    SimpleList<std::string> *list = (*mp->strings)[name];
+    if (list == nullptr) {
+      std::cout << "ERROR: This name does not exist!\n";
+      return;
+    }
+    if (list->isEmpty()) {
+      std::cout << "ERROR: This list is empty!\n";
+      return;
+    }
+    std::cout << "Value popped: " << list->pop() << "\n";
     return;
   }
-  if (list.type == listType::queue) {
-    listContents contents = getListContents(name);
-    if (contents == listContents::aString) {
-      auto* l = (Queue<std::string>*)(list.list);
-      if (l->isEmpty()) {
-        std::cout << "ERROR: This list is empty!\n";
-        return;
-      }
-      std::cout << "Value popped: " << l->pop() << "\n";
-    } else if (contents == listContents::aDouble) {
-      auto* l = (Queue<double>*)(list.list);
-      if (l->isEmpty()) {
-        std::cout << "ERROR: This list is empty!\n";
-        return;
-      }
-      std::cout << "Value popped: " << l->pop() << "\n";
-    } else {
-      auto* l = (Queue<int>*)(list.list);
-      if (l->isEmpty()) {
-        std::cout << "ERROR: This list is empty!\n";
-        return;
-      }
-      std::cout << "Value popped: " << l->pop() << "\n";
+  if (listContent == listContents::aDouble) {
+    SimpleList<double> *list = (*mp->doubles)[name];
+    if (list == nullptr) {
+      std::cout << "ERROR: This name does not exist!\n";
+      return;
     }
-  } else {
-    listContents contents = getListContents(name);
-    if (contents == listContents::aString) {
-      auto* l = (Stack<std::string>*)(list.list);
-      if (l->isEmpty()) {
-        std::cout << "ERROR: This list is empty!\n";
-        return;
-      }
-      std::cout << "Value popped: " << l->pop() << "\n";
-    } else if (contents == listContents::aDouble) {
-      auto* l = (Stack<double>*)(list.list);
-      if (l->isEmpty()) {
-        std::cout << "ERROR: This list is empty!\n";
-        return;
-      }
-      std::cout << "Value popped: " << l->pop() << "\n";
-    } else {
-      auto* l = (Stack<int>*)(list.list);
-      if (l->isEmpty()) {
-        std::cout << "ERROR: This list is empty!\n";
-        return;
-      }
-      std::cout << "Value popped: " << l->pop() << "\n";
+    if (list->isEmpty()) {
+      std::cout << "ERROR: This list is empty!\n";
+      return;
     }
+    std::cout << "Value popped: " << list->pop() << "\n";
+    return;
+  }
+  if (listContent == listContents::anInteger) {
+    SimpleList<int> *list = (*mp->ints)[name];
+    if (list == nullptr) {
+      std::cout << "ERROR: This name does not exist!\n";
+      return;
+    }
+    if (list->isEmpty()) {
+      std::cout << "ERROR: This list is empty!\n";
+      return;
+    }
+    std::cout << "Value popped: " << list->pop() << "\n";
+    return;
   }
 }
 
