@@ -1,25 +1,27 @@
-//    Copyright (C) 2021 Gary Kim <gary@garykim.dev>
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU Affero General Public License as published
-//    by the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU Affero General Public License for more details.
-//
-//    You should have received a copy of the GNU Affero General Public License
-//    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
+/*
+ * dsa-1-project-1 will read in a file of commands for lists and execute them
+ * Copyright (C) 2021 Gary Kim <gary@garykim.dev>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include "main.h"
 
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <unordered_map>
-
-#include "main.h"
 
 int main(int argc, char** argv) {
   std::string inputFilePath, outputFilePath;
@@ -49,6 +51,10 @@ int main(int argc, char** argv) {
   return 0;
 }
 
+/**
+ * Reads in a list of commands from stdin and executes each command
+ * then outputs the results of each command to stdout
+ */
 void runFile() {
   // map of everything
   std::unordered_map<std::string, listEntry> m;
@@ -78,6 +84,12 @@ void runFile() {
   }
 }
 
+/**
+ * create is an implementation for the create command that could be given.
+ * @param mp map of listEntry(s) storing the lists that have been created
+ * @param name the name of the list to create
+ * @param type the type of list to create
+ */
 void create(std::unordered_map<std::string, listEntry>* mp, std::string name,
             std::string type) {
   std::cout << "PROCESSING COMMAND: create " << name << " " << type << "\n";
@@ -117,6 +129,12 @@ void create(std::unordered_map<std::string, listEntry>* mp, std::string name,
   (*mp)[name] = listEntry{ta, lType};
 }
 
+/**
+ * push is an implementation for the push command that could be given.
+ * @param mp map of listEntry(s) storing the lists that have been created
+ * @param name the name of the list to push the value onto
+ * @param value the value to push onto the list
+ */
 void push(std::unordered_map<std::string, listEntry>* mp, std::string name,
           std::string value) {
   std::cout << "PROCESSING COMMAND: push " << name << " " << value << "\n";
@@ -152,6 +170,11 @@ void push(std::unordered_map<std::string, listEntry>* mp, std::string name,
   }
 }
 
+/**
+ * pop is an implementation for the pop command that could be given.
+ * @param mp map of listEntry(s) storing the lists that have been created
+ * @param name the name of the list to push the value onto
+ */
 void pop(std::unordered_map<std::string, listEntry>* mp, std::string name) {
   std::cout << "PROCESSING COMMAND: pop " << name << "\n";
   listEntry list = (*mp)[name];
@@ -210,6 +233,11 @@ void pop(std::unordered_map<std::string, listEntry>* mp, std::string name) {
   }
 }
 
+/**
+ * Uses the name of the list to identify its contents
+ * @param name the name of the list
+ * @return listContents
+ */
 listContents getListContents(std::string name) {
   switch (name.at(0)) {
     case 's':
