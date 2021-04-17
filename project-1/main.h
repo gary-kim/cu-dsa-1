@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 /**
  * A simple singly-linked list implementation
@@ -35,7 +36,7 @@ class List {
    public:
     Node *next = NULL;
     T value;
-    Node(T value) : value(value) {}
+    explicit Node(T value) : value(value) {}
     Node(T value, Node *next) : value(value), next(next) {}
   };
   Node *start = NULL;
@@ -47,7 +48,7 @@ class List {
   T remove();
 
  public:
-  List(std::string name) : name(name) {}
+  explicit List(std::string name) : name(std::move(name)) {}
   virtual void push(T const &) = 0;
   virtual T pop() = 0;
   bool isEmpty();
@@ -67,7 +68,6 @@ void List<T>::insertStart(T const &value) {
   }
   Node *tmp = this->start;
   this->start = new Node(value, tmp);
-  return;
 }
 
 /**
@@ -147,8 +147,8 @@ enum listType {
 };
 
 struct listEntry {
-  void *list = NULL;
-  listType type;
+  void *list = nullptr;
+  listType type = listType::stack;
 };
 
 enum listContents {
@@ -158,11 +158,11 @@ enum listContents {
 };
 
 void runFile();
-void create(std::unordered_map<std::string, listEntry> *, std::string,
-            std::string);
-void push(std::unordered_map<std::string, listEntry> *, std::string,
-          std::string);
-void pop(std::unordered_map<std::string, listEntry> *, std::string);
+void create(std::unordered_map<std::string, listEntry> *, const std::string &,
+            const std::string &);
+void push(std::unordered_map<std::string, listEntry> *, const std::string &,
+          const std::string &);
+void pop(std::unordered_map<std::string, listEntry> *, const std::string &);
 listContents getListContents(std::string);
 
 #endif  // CU_DSA_1_MAIN_H
