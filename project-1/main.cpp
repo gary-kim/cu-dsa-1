@@ -16,13 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "main.h"
+#include "main.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <unordered_map>
 
+/**
+ * If run with arguments, the 1st argument will be used as the input file
+ * and the second argument will be used as the output file. It is possible
+ * to also use "-" as a filename to use stdin or stdout.
+ */
 int main(int argc, char **argv) {
   std::string inputFilePath, outputFilePath;
   std::ofstream outputFile;

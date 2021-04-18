@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef CU_DSA_1_MAIN_H
-#define CU_DSA_1_MAIN_H
+#ifndef CU_DSA_1_MAIN_HPP
+#define CU_DSA_1_MAIN_HPP
 
 #include <stdexcept>
 #include <string>
@@ -161,4 +161,4 @@ void push(Lists *, std::string, std::string);
 void pop(Lists *, std::string);
 listContents getListContents(std::string);
 
-#endif  // CU_DSA_1_MAIN_H
+#endif  // CU_DSA_1_MAIN_HPP
