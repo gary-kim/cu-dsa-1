@@ -164,7 +164,7 @@ void push(Lists *mp, std::string name, std::string value) {
       std::cout << "ERROR: This name does not exist!\n";
       return;
     }
-    list->push(atof(value.c_str()));
+    list->push(stod(value));
     return;
   }
   if (listContent == listContents::anInteger) {
@@ -173,7 +173,7 @@ void push(Lists *mp, std::string name, std::string value) {
       std::cout << "ERROR: This name does not exist!\n";
       return;
     }
-    list->push(atoi(value.c_str()));
+    list->push(stoi(value));
   }
 }
 
