@@ -86,7 +86,6 @@ void runFile() {
       std::string name;
       std::cin >> name;
       pop(&list, name);
-      continue;
     }
   }
 }
@@ -222,7 +221,6 @@ void pop(Lists *mp, std::string name) {
       return;
     }
     std::cout << "Value popped: " << list->pop() << "\n";
-    return;
   }
 }
 

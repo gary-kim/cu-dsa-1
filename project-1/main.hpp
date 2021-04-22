@@ -31,8 +31,6 @@
 template <class T>
 class SimpleList {
  private:
-  // unused but instructions said to add it so keeping it
-  std::string name;
   class Node {
    public:
     Node *next = NULL;
@@ -50,7 +48,6 @@ class SimpleList {
 
  public:
   SimpleList(){};
-  explicit SimpleList(std::string name) : name(std::move(name)){};
   virtual void push(T const &) = 0;
   virtual T pop() = 0;
   bool isEmpty();
