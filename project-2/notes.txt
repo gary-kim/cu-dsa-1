@@ -1,0 +1,11 @@
+The plan is to first use American Flag Sort to sort the last names.
+
+
+After sorting the last name, find offsets for first names (maybe this could be done during the sort for the last names since AFS requires finding offsets anyways. Essentially, pass a list through every function and during offset calculation for the last digit, put all offsets in. Afterwards, iterate through this list to remove duplicates).
+
+If the size of a certain last name is larger than something like 50, sort again with AFS. If it is smaller, sort with l.sort() (should be faster).
+
+After that, find offsets again (either during AFS or manually if l.sort() was used), and use l.sort by social security number.
+
+When adding to a list of offsets, keep in mind that std::list::insert makes it possible to insert values before a given iterator.
+std::list::erase is also a thing that makes it possible to remove a specific element using an iterator.
